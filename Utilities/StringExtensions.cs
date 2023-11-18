@@ -45,7 +45,7 @@ public static class StringExtensions
         }
     }
 
-    public static bool TryReadNested(this string t, char startCharacter, char endCharacter, int startIndex, out int start, out int end )
+    public static bool TryReadNested(this string t, char startCharacter, char endCharacter, int startIndex, out int start, out int end)
     {
         start = startIndex;
         while (start < t.Length)
@@ -103,12 +103,7 @@ public static class StringExtensions
 
     public static string ReplaceAll(this MatchCollection matches, string source, string replacement)
     {
-        foreach (var match in matches.Cast<Match>())
-        {
-            source = match.Replace(source, replacement);
-        }
-
-        return source;
+        return matches.Aggregate(source, (current, match) => match.Replace(current, replacement));
     }
 
     public static string Replace(this Match match, string source, string replacement)

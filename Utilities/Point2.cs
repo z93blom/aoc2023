@@ -6,7 +6,7 @@
 /// <param name="X">The x value for the point.</param>
 /// <param name="Y">The y value for the point.</param>
 /// <param name="YAxis">The y axis orientation.</param>
-public record struct Point2(long X, long Y, YAxisDirection YAxis)
+public readonly record struct Point2(long X, long Y, YAxisDirection YAxis)
 {
     public Point2 Left => this with { X = X - 1  };
     public Point2 Right => this with { X = X + 1 };
