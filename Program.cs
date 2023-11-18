@@ -36,14 +36,14 @@ var action =
     {
         var year = int.Parse(m[1]);
         var day = int.Parse(m[2]);
-        return () => Updater.Update(year, day, solverTypes).Wait();
+        return () => Updater.Update(year, day).Wait();
     }) ??
     Command(args, Args("update", "last"), _ =>
     {
         var now = DateTime.Now;
-        if (now.Month == 12 && now.Day is >= 1 and <= 25)
+        if (now is { Month: 12, Day: >= 1 and <= 25 })
         {
-            return () => Updater.Update(now.Year, now.Day, solverTypes).Wait();
+            return () => Updater.Update(now.Year, now.Day).Wait();
         }
         else
         {

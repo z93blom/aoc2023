@@ -6,9 +6,10 @@ public class SolutionTemplateGenerator {
     public static string Generate(Problem problem)
     {
         return $$"""
+                using AdventOfCode.Framework;
                 using AdventOfCode.Utilities;
 
-                namespace AdventOfCode.Y{{problem.Year}}.Day{{problem.Day:00}};
+                namespace AdventOfCode.Solutions.Y{{problem.Year}}.Day{{problem.Day:00}};
 
                 class Solution : ISolver
                 {

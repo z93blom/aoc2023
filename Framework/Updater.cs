@@ -2,51 +2,64 @@ using System.Diagnostics;
 using System.Net;
 using AdventOfCode.Generator;
 using AdventOfCode.Model;
+using Spectre.Console;
+using Calendar = AdventOfCode.Model.Calendar;
 
 namespace AdventOfCode.Framework;
 
-public class Updater
+public static class Updater
 {
-    public const string SessionEnvironmentName = "AOCSESSION";
+    private const string SessionEnvironmentName = "AOCSESSION";
 
-    public static async Task Update(int year, int day, IEnumerable<Type> solvers)
+    public static async Task Update(int year, int day)
     {
-        if (!Environment.GetEnvironmentVariables().Contains(SessionEnvironmentName))
+        try
         {
-            throw new Exception($"Specify '{SessionEnvironmentName}' environment variable.");
-        }
-
-        var cookieContainer = new CookieContainer();
-        using var client = new HttpClient(
-            new HttpClientHandler
+            if (!Environment.GetEnvironmentVariables().Contains(SessionEnvironmentName))
             {
-                CookieContainer = cookieContainer,
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-            });
+                throw new Exception($"Specify '{SessionEnvironmentName}' environment variable.");
+            }
 
-        var baseAddress = new Uri("https://adventofcode.com/");
-        client.BaseAddress = baseAddress;
-        cookieContainer.Add(baseAddress, new Cookie("session", Environment.GetEnvironmentVariable(SessionEnvironmentName)));
+            var cookieContainer = new CookieContainer();
+            using var client = new HttpClient(
+                new HttpClientHandler
+                {
+                    CookieContainer = cookieContainer,
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+                });
 
-        var calendar = await DownloadCalendar(client, year);
-        var problem = await DownloadProblem(client, year, day);
+            var baseAddress = new Uri("https://adventofcode.com/");
+            client.BaseAddress = baseAddress;
+            cookieContainer.Add(baseAddress,
+                new Cookie("session", Environment.GetEnvironmentVariable(SessionEnvironmentName)));
 
-        var dir = Dir(year, day);
-        if (!Directory.Exists(dir))
-        {
-            Directory.CreateDirectory(dir);
+            var calendar = await DownloadCalendar(client, year);
+            var problem = await DownloadProblem(client, year, day);
+
+            var dir = Dir(year, day);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            CreateThemeForYear(calendar);
+            UpdateReadmeForYear(calendar);
+            UpdateSplashScreen(calendar);
+            UpdateReadmeForDay(problem);
+            UpdateInput(problem);
+            UpdateRefout(problem);
+            UpdateSolutionTemplate(problem);
+            UpdateExample(problem);
         }
-
-        var years = solvers.Select(s => SolverExtensions.Year(s));
-
-        CreateThemeForYear(calendar);
-        UpdateReadmeForYear(calendar);
-        UpdateSplashScreen(calendar);
-        UpdateReadmeForDay(problem);
-        UpdateInput(problem);
-        UpdateRefout(problem);
-        UpdateSolutionTemplate(problem);
-        UpdateExample(problem);
+        catch (HttpRequestException e)
+        {
+            AnsiConsole.WriteException(e);
+            AnsiConsole.MarkupLine($"[darkorange]Is your[/] [maroon]'{SessionEnvironmentName}'[/] [darkorange] environment variable updated to a correct value?[/]");
+        }
+        catch (Exception e)
+        {
+            AnsiConsole.WriteException(e);
+        }
     }
 
     static async Task<string> Download(HttpClient client, string path)

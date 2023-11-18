@@ -8,6 +8,7 @@ public class SplashScreenGenerator {
     public static string Generate(Calendar calendar, Dictionary<string, int> themeColors) {
         string calendarPrinter = CalendarPrinter(calendar, themeColors);
         return $$"""
+            using AdventOfCode.Framework;
             namespace AdventOfCode.Y{{calendar.Year}};
             
             class SplashScreenImpl : SplashScreen
