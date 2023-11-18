@@ -9,4 +9,6 @@ interface IResolver
     IEnumerable<ISolver> GetAllSolvers();
 
     ISolver? GetLatestSolver();
+
+    IEnumerable<YearAndDay> GetPossibleDays();
 }

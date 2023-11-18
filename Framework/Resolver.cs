@@ -46,4 +46,9 @@ class Resolver : IResolver
 
         return GetSolver(yd);
     }
+
+    public IEnumerable<YearAndDay> GetPossibleDays()
+    {
+        return _solverDays;
+    }
 }

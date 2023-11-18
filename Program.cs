@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using AdventOfCode.Framework;
+using Spectre.Console;
 
 var usageProvider = new ApplicationUsage();
 var assemblies = new List<Assembly>
@@ -111,6 +112,25 @@ var action =
             }
         };
     }) ??
+    Command(args, Args("list"), _ =>
+    {
+        return () =>
+        {
+            var days = solverResolver.GetPossibleDays()
+                .OrderBy(yd => yd.Year)
+                .ThenBy(yd => yd.Day)
+                .GroupBy(yd => yd.Year);
+            
+            var root = new Tree("Implemented solvers");
+
+            foreach (var group in days)
+            {
+                var yearNode = root.AddNode($"{group.Key}");
+                yearNode.AddNode(string.Join(", ", group.Select(yd => yd.Day.ToString())));
+            }
+            AnsiConsole.Write(root);
+        };
+    }) ?? 
     new Action(() =>
     {
         Console.WriteLine(usageProvider.Usage());
