@@ -1,4 +1,6 @@
-﻿namespace AdventOfCode.Framework;
+﻿using Microsoft.Extensions.DependencyInjection;
+
+namespace AdventOfCode.Framework;
 
 class Resolver : IResolver
 {
@@ -13,44 +15,28 @@ class Resolver : IResolver
 
     public ISolver? GetSolvers(int year, int day)
     {
-        var solverType = _solverTypes
-            .FirstOrDefault(t => SolverExtensions.Year(t) == year &&
-                                 SolverExtensions.Day(t) == day);
-
-        if (solverType == null)
-        {
-            return null;
-        }
-
-        var solver = _services.GetService(solverType) as ISolver;
+        var yearDay = new YearAndDay(year, day);
+        var solver = _services.GetKeyedService<ISolver>(yearDay);
         return solver;
     }
 
     public IEnumerable<ISolver> GetSolvers(int year)
     {
-        var solverTypes = _solverTypes
-                .Where(t => SolverExtensions.Year(t) == year)
-                .OrderBy(SolverExtensions.Day)
-                .ToArray();
-
-        foreach (var solverType in solverTypes)
+        foreach (var day in Enumerable.Range(1, 25))
         {
-            if (_services.GetService(solverType) is ISolver solver)
+            var solver = GetSolvers(year, day);
+            if (solver != null)
+            {
                 yield return solver;
+            }
         }
     }
     public IEnumerable<ISolver> GetAllSolvers()
     {
-        var solverTypes = _solverTypes
-            .OrderBy(SolverExtensions.Year)
-            .ThenBy(SolverExtensions.Day)
-            .ToArray();
-
-        foreach (var solverType in solverTypes)
-        {
-            if (_services.GetService(solverType) is ISolver solver)
-                yield return solver;
-        }
+        var solvers = _services.GetServices(typeof(ISolver))
+            .Where(s => s != null)
+            .Cast<ISolver>();
+        return solvers;
     }
 
     public ISolver? GetLatestSolver()

@@ -21,7 +21,8 @@ var host = Host.CreateDefaultBuilder(args)
     {
         foreach (var solverType in solverTypes)
         {
-            services.AddTransient(solverType);
+            services.AddKeyedTransient<ISolver>(SolverExtensions.YearAndDay(solverType),
+                (_, _) => (ISolver)Activator.CreateInstance(solverType));
         }
 
         services.AddSingleton<IResolver>(s => new Resolver(s, solverTypes));

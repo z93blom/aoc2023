@@ -13,13 +13,25 @@ public static class SolverExtensions
 
     public static int Year(Type t)
     {
-        return int.Parse(t.FullName.Split('.')[1][1..]);
+        var namespaceParts = t.Namespace.Split('.');
+        var yearPart = namespaceParts.FirstOrDefault(s => s[0] == 'Y' && s.Length == 5 && s[1..].All(char.IsDigit));
+        var yearString = yearPart[1..];
+        return int.Parse(yearString);
     }
 
     public static int Day(Type t)
     {
-        return int.Parse(t.FullName.Split('.')[2][3..]);
+        var namespaceParts = t.Namespace.Split('.');
+        var dayPart = namespaceParts.FirstOrDefault(s => s.StartsWith("Day") && s.Length == 5 && s[3..].All(char.IsDigit));
+        var dayString = dayPart[3..];
+        return int.Parse(dayString);
     }
+
+    public static YearAndDay YearAndDay(Type t)
+    {
+        return new YearAndDay(Year: Year(t), Day: Day(t));
+    }
+    
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
 
 
