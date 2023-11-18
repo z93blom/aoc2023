@@ -2,7 +2,7 @@
 
 interface IResolver
 {
-    ISolver? GetSolvers(int year, int day);
+    ISolver? GetSolver(YearAndDay yd);
 
     IEnumerable<ISolver> GetSolvers(int year);
 

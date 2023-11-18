@@ -19,13 +19,24 @@ var solverTypes = assemblies.SelectMany(a => a.GetTypes())
 var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((_, services) =>
     {
+        var yearDaysWithSolvers = new List<YearAndDay>();
         foreach (var solverType in solverTypes)
         {
-            services.AddKeyedTransient<ISolver>(SolverExtensions.YearAndDay(solverType),
-                (_, _) => (ISolver)Activator.CreateInstance(solverType));
+            var yearAndDay = SolverExtensions.YearAndDay(solverType);
+            services.AddKeyedTransient<ISolver>(yearAndDay, (_, _) =>
+            {
+                var instance = Activator.CreateInstance(solverType);
+                if (instance == null)
+                {
+                    throw new InvalidOperationException($"Unable to create an instance of ISolver for {yearAndDay.Year}-{yearAndDay.Day}");
+                }
+
+                return (ISolver)instance;
+            });
+            yearDaysWithSolvers.Add(yearAndDay);
         }
 
-        services.AddSingleton<IResolver>(s => new Resolver(s, solverTypes));
+        services.AddSingleton<IResolver>(s => new Resolver(s, yearDaysWithSolvers));
     })
     .Build();
 
@@ -55,7 +66,7 @@ var action =
     {
          var year = int.Parse(m[0]);
          var day = int.Parse(m[1]);
-         var solver = solverResolver.GetSolvers(year, day);
+         var solver = solverResolver.GetSolver(new YearAndDay(year, day));
          return () =>
          {
              if (solver != null)

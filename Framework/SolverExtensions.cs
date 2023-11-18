@@ -11,7 +11,7 @@ public static class SolverExtensions
 
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
 
-    public static int Year(Type t)
+    private static int Year(Type t)
     {
         var namespaceParts = t.Namespace.Split('.');
         var yearPart = namespaceParts.FirstOrDefault(s => s[0] == 'Y' && s.Length == 5 && s[1..].All(char.IsDigit));
@@ -19,7 +19,7 @@ public static class SolverExtensions
         return int.Parse(yearString);
     }
 
-    public static int Day(Type t)
+    private static int Day(Type t)
     {
         var namespaceParts = t.Namespace.Split('.');
         var dayPart = namespaceParts.FirstOrDefault(s => s.StartsWith("Day") && s.Length == 5 && s[3..].All(char.IsDigit));
