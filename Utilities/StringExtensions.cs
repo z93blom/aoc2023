@@ -116,9 +116,17 @@ public static class StringExtensions
         return s[startIndex..endIndex];
     }
 
-    public static bool Matches(this string s, [StringSyntax(StringSyntaxAttribute.Regex)] string pattern, out Group[] groups)
+    /// <summary>
+    /// Tries to apply the regular expression on the string, and returns the captured groups from it.
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="pattern"></param>
+    /// <param name="groups"></param>
+    /// <returns></returns>
+    public static bool TryMatch(this string s, [StringSyntax(StringSyntaxAttribute.Regex)] string pattern, out Group[] groups)
     {
         var match = Regex.Match(s, pattern);
+        // Take all the groups from the result, but skip the first one (the one that includes the whole string).
         groups = match.Groups.Cast<Group>().Skip(1).ToArray();
         return match.Success;
     }
@@ -145,29 +153,23 @@ public static class StringExtensions
     }
 
 
+    /// <summary>
+    /// Returns the groups from a regex (the values inside of captured parenthesis), applied to each string in turn.
+    /// </summary>
+    /// <param name="strings">The list of strings to apply the regex pattern to.</param>
+    /// <param name="pattern">The regular expression pattern.</param>
+    /// <returns>The list of groups for each string.</returns>
     public static IEnumerable<Group[]> Groups(this IEnumerable<string> strings, [StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
     {
         foreach (var s in strings)
         {
-            if (s.Matches(pattern, out var groups))
+            if (s.TryMatch(pattern, out var groups))
             {
                 yield return groups.ToArray();
             }
         }
     }
-
-
-    public static IEnumerable<Group[]> Matches(this IEnumerable<string> strings, [StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
-    {
-        foreach(var s in strings)
-        {
-            if (s.Matches(pattern, out var groups))
-            {
-                yield return groups;
-            }
-        }
-    }
-
+    
     /// <summary>
     /// Removes all occurrences of a character from a string.
     /// </summary>
