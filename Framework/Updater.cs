@@ -149,7 +149,7 @@ public static class Updater
         var theme = SolverExtensions.Theme(calendar.Year);
         if (theme != null)
         {
-            theme.Override(themeColors);
+            themeColors = theme.Override(themeColors);
         }
 
         var file = Path.Combine(Environment.CurrentDirectory, SolverExtensions.WorkingDir(calendar.Year), "SplashScreen.cs");
