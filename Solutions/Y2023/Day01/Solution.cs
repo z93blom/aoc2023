@@ -8,6 +8,8 @@ class Solution : ISolver
     public int Year => 2023;
     public int Day => 1;
     public string GetName() => "Trebuchet?!";
+    
+    private static readonly string[] Numbers = { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
 
     public IEnumerable<object> Solve(string input, Func<TextWriter> getOutputFunction)
     {
@@ -46,29 +48,14 @@ class Solution : ISolver
                 return line[index] - '0';
             }
 
-            if (Is(line, index,"one"))
-                return 1;
+            foreach (var (s, i) in Numbers.Select((s, i) => (s, i)))
+            {
+                if (Is(line, index, s))
+                    return i + 1;
+            }
             
-            if (Is(line, index, "two"))
-                return 2;
-            if (Is(line, index, "three"))
-                return 3;
-            if (Is(line, index, "four"))
-                return 4;
-            if (Is(line, index, "five"))
-                return 5;
-            if (Is(line, index, "six"))
-                return 6;
-            if (Is(line, index, "seven"))
-                return 7;
-            if (Is(line, index, "eight"))
-                return 8;
-            if (Is(line, index, "nine"))
-                return 9;
             index++;
         }
-
-        throw new ArgumentException();
     }
     
     static int LastDigit(string line)
@@ -81,41 +68,28 @@ class Solution : ISolver
                 return line[index] - '0';
             }
 
-            if (Is(line, index,"one"))
-                return 1;
-            
-            if (Is(line, index, "two"))
-                return 2;
-            if (Is(line, index, "three"))
-                return 3;
-            if (Is(line, index, "four"))
-                return 4;
-            if (Is(line, index, "five"))
-                return 5;
-            if (Is(line, index, "six"))
-                return 6;
-            if (Is(line, index, "seven"))
-                return 7;
-            if (Is(line, index, "eight"))
-                return 8;
-            if (Is(line, index, "nine"))
-                return 9;
+            foreach (var (s, i) in Numbers.Select((s, i) => (s, i)))
+            {
+                if (Is(line, index, s))
+                    return i + 1;
+            }
+
             index--;
         }
-
-        throw new ArgumentException();
     }
     
     private static bool Is(string line, int index, string s)
     {
-        for (int offset = 0; offset < s.Length; offset++)
+        for (var offset = 0; offset < s.Length; offset++)
         {
             if (line.Length <= index + offset)
                 return false;
+            
             if (line[index + offset] != s[offset])
                 return false;
         }
 
         return true;
     }
+
 }
