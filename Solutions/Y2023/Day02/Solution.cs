@@ -59,6 +59,19 @@ class Solution : ISolver
 
     static object PartTwo(string input, Func<TextWriter> getOutputFunction)
     {
-        return 0;
+        var games = input
+            .Lines()
+            .Select(l => l.Split(':').ToArray())
+            .Select(a => (GameNumber: int.Parse(a[0].Substring(5)), Pulls: a[1].Split(';').Select(ParsePull)))
+            .ToArray();
+
+        var minimumPulls = games
+            .Select(g => new Pull(g.Pulls.Max(p => p.Red), g.Pulls.Max(p => p.Green), g.Pulls.Max(p => p.Blue)))
+            .ToArray();
+
+        var sum = minimumPulls
+            .Select(p => p.Red * p.Green * p.Blue)
+            .Sum();
+        return sum;
     }
 }
