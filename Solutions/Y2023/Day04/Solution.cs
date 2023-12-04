@@ -45,6 +45,41 @@ class Solution : ISolver
 
     static object PartTwo(string input, Func<TextWriter> getOutputFunction)
     {
-        return 0;
+        var cards = input.Lines()
+            .Select(l => new Card(l.Integers().ToArray()))
+            .ToArray();
+
+        // We get one card of each to start with.
+        var numberOfCards =
+            new Dictionary<int, long>(cards.Select(c => new KeyValuePair<int, long>(c.CardNumber, 1)));
+
+        foreach (var card in cards)
+        {
+            var cardNumber = card.CardNumber;
+            var n = numberOfCards[cardNumber];
+            for (var i = 0; i < card.Matches; i++)
+            {
+                numberOfCards[cardNumber + i + 1] += n;
+            }
+        }
+
+        var total = numberOfCards.Sum(kvp => kvp.Value);
+        
+        return total;
+    }
+
+    public record struct Card
+    {
+        public int CardNumber { get; }
+        public int Matches { get; }
+
+        public Card(IReadOnlyList<int> numbers)
+        {
+            CardNumber = numbers[0];
+            Matches = numbers
+                .Skip(1)    
+                .GroupBy(i => i)
+                .Count(g => g.Count() == 2);
+        }
     }
 }
