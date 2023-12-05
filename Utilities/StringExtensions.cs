@@ -20,6 +20,12 @@ public static class StringExtensions
         var matches = _intRegex.Matches(s);
         return matches.SelectMany(m => m.Captures.Select(v => int.Parse(v.Value)));
     }
+    
+    public static IEnumerable<long> Longs(this string s)
+    {
+        var matches = _intRegex.Matches(s);
+        return matches.SelectMany(m => m.Captures.Select(v => long.Parse(v.Value)));
+    }
 
     public static IEnumerable<int> ParseNumbers(this string t)
     {
