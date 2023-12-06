@@ -174,7 +174,7 @@ class Solution : ISolver
 
     static object PartTwo(string input, Func<TextWriter> getOutputFunction)
     {
-        var debugPrinter = getOutputFunction();
+        //var debugPrinter = getOutputFunction();
         var lines = input
             .Lines(StringSplitOptions.TrimEntries)
             .ToArray();
@@ -239,8 +239,8 @@ class Solution : ISolver
                 var map = maps[level];
                 
                 var mappedRanges = map.MapRange(range).ToArray();
-                var mappedString = string.Join(", ", mappedRanges.Select(r => r.ToString()));
-                debugPrinter.WriteLine($"{level}: {range} -> {mappedString}");
+                //var mappedString = string.Join(", ", mappedRanges.Select(r => r.ToString()));
+                // debugPrinter.WriteLine($"{level}: {range} -> {mappedString}");
                 foreach (var r in mappedRanges)
                 {
                     rangesToTry.Push(new RangeAndLevel(r, level + 1));
