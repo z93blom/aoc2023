@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics;
 using AdventOfCode.Framework;
 using AdventOfCode.Utilities;
 using LanguageExt.UnitsOfMeasure;
@@ -124,6 +125,7 @@ class Solution : ISolver
         }
     }
 
+    [DebuggerDisplay("Mapper {Source.Start}-{Source.Last} -> {Destination}")]
     private readonly record struct Mapper(long Destination, RangeL Source)
     {
         public long MapValue(long value)
@@ -135,51 +137,9 @@ class Solution : ISolver
 
             return value - Source.Start + Destination;
         }
-
-        public IEnumerable<RangeL> MapRange(RangeL range)
-        {
-            var totalLength = 0L;
-            if (!range.Intersects(Source))
-            {
-                yield return range;
-                totalLength = range.Length;
-            }
-            else if (range.Start < Source.Start && range.Last > Source.Last)
-            {
-                var (left, rest) = range.Split(Source.Start);
-                var (middle, right) = rest.Split(Source.Last + 1);
-                yield return left;
-                yield return middle with { Start = MapValue(middle.Start) };
-                yield return right;
-                totalLength = left.Length + middle.Length + right.Length;
-            }
-            else if (range.Start < Source.Start)
-            {
-                var (left, right) = range.Split(Source.Start);
-                yield return left;
-                yield return right with { Start = MapValue(right.Start) };
-                totalLength = left.Length + right.Length;
-            }
-            else if (range.Last > Source.Last)
-            {
-                var (left, right) = range.Split(Source.Last + 1);
-                yield return left with { Start = MapValue(left.Start) };
-                yield return right;
-                totalLength = left.Length + right.Length;
-            }
-            else
-            {
-                yield return range with { Start = MapValue(range.Start) };
-                totalLength = range.Length;
-            }
-
-            if (totalLength != range.Length)
-            {
-                throw new Exception("Implementation error");
-            }
-        }
     }
 
+    [DebuggerDisplay("{Start} - {Last} (Length {Length}, IsEmpty: {IsEmpty})")]
     private readonly record struct RangeL(long Start, long Length)
     {
         public static RangeL Empty => new RangeL(0, 0); 
@@ -205,10 +165,16 @@ class Solution : ISolver
             var right = new RangeL(actualLast + 1, Length - left.Length);
             return (left, right);
         }
+
+        public override string ToString()
+        {
+            return $"{Start}-{Last}";
+        }
     }
 
     static object PartTwo(string input, Func<TextWriter> getOutputFunction)
     {
+        var debugPrinter = getOutputFunction();
         var lines = input
             .Lines(StringSplitOptions.TrimEntries)
             .ToArray();
@@ -244,7 +210,7 @@ class Solution : ISolver
                 index++;
             }
 
-            var map = new Map(names[0].Value, names[1].Value, mappers.OrderBy(m => m.Destination).ToArray());
+            var map = new Map(names[0].Value, names[1].Value, mappers.OrderBy(m => m.Source.Start).ToArray());
             maps.Add(map);
             index++;
         }
@@ -271,7 +237,11 @@ class Solution : ISolver
             else
             {
                 var map = maps[level];
-                foreach (var r in map.MapRange(range))
+                
+                var mappedRanges = map.MapRange(range).ToArray();
+                var mappedString = string.Join(", ", mappedRanges.Select(r => r.ToString()));
+                debugPrinter.WriteLine($"{level}: {range} -> {mappedString}");
+                foreach (var r in mappedRanges)
                 {
                     rangesToTry.Push(new RangeAndLevel(r, level + 1));
                 }
