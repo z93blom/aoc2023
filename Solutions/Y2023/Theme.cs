@@ -6,6 +6,7 @@ class Theme : ITheme
     {
         themeColors["calendar-color-n"] = 0x9b715b;
         themeColors["calendar-color-g"] = 0x00cc00;
+        themeColors["calendar-color-s"] = 0xe3b585;
         return themeColors;
     }
 }
