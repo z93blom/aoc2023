@@ -69,8 +69,13 @@ class Solution : ISolver
             Cards = input.Select(c => new Card2(c)).ToArray();
             var cardsWithoutJokers = Cards.Where(c => c.Label != 'J').ToArray();
             var jokers = 5 - cardsWithoutJokers.Length;
-            var groupings = cardsWithoutJokers.Length == 0 ? null : cardsWithoutJokers.Select(c => c.Label).GroupBy(l => l).ToArray();
-            var maxOfSingle = cardsWithoutJokers.Length == 0 ? 0 : cardsWithoutJokers.Select(c => c.Label).GroupBy(l => l).Max(g => g.Count());
+            if (jokers == 5)
+            {
+                HandType = HandType.FullHouse;
+                return;
+            }
+            var groupings = cardsWithoutJokers.Select(c => c.Label).GroupBy(l => l).ToArray();
+            var maxOfSingle = cardsWithoutJokers.Select(c => c.Label).GroupBy(l => l).Max(g => g.Count());
 
             HandType = jokers switch
             {
@@ -120,7 +125,6 @@ class Solution : ISolver
                     _ => throw new ArgumentException("Invalid hand type")
                 },
                 4 => HandType.FiveOfAKind,
-                5 => HandType.FiveOfAKind,
                 _ => throw new ArgumentException("Invalid hand type")
             };
         }
