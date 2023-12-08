@@ -12,10 +12,13 @@ class SplashScreenImpl : SplashScreen
         Write(0xe3b585, "    \n                                                            \n                                  ");
         Write(0xe3b585, "                          \n                                                            \n            ");
         Write(0xe3b585, "                          .                     \n                           ~                       ");
-        Write(0xe3b585, "         \n                              ~   ~        .                \n           ");
-        Write(0x888888, "                    *     ");
+        Write(0xe3b585, "         \n           ");
+        Write(0x888888, "               *   ");
+        Write(0xe3b585, "~   ~        .                  ");
+        Write(0x888888, " 9\n                               *     ");
         Write(0xe3b585, "~                        ");
-        Write(0x888888, " 8\n                    ");
+        Write(0x888888, " 8 ");
+        Write(0xffff66, "**\n                    ");
         Write(0xe3b585, ". ~     ~ ~           .                 \n                      .. ~ ~ ");
         Write(0xffff66, "* ");
         Write(0xe3b585, "~        . ");
