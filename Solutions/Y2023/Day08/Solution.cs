@@ -64,43 +64,31 @@ partial class Solution : ISolver
             .ToDictionary(n => n.Name, n => n);
 
 
-        var steps = 0L;
-        var index = 0;
-        var current = nodes.Where(kvp => kvp.Value.Name.EndsWith('A')).Select(kvp => kvp.Value).ToArray();
-        var allEndsWithZ = false;
-        var logger = getOutputFunction();
-        while (!allEndsWithZ)
+        var startingNodes = nodes.Where(kvp => kvp.Value.Name.EndsWith('A')).Select(kvp => kvp.Value).ToArray();
+        var stepsUntilZ = new List<double>();
+        foreach (var node in startingNodes)
         {
-            var instruction = instructions[index];
-            index = (index + 1) % instructions.Length;
-            steps++;
-            allEndsWithZ = true;
-            var next = new Node[current.Length];
-            var i = 0;
-            foreach (var node in current)
+            var index = 0;
+            var steps = 0L;
+            var current = node;
+            while (!current.Name.EndsWith('Z'))
             {
-                next[i] = instruction switch
+                var instruction = instructions[index];
+                index = (index + 1) % instructions.Length;
+                steps++;
+                current = instruction switch
                 {
-                    'L' => nodes[node.Left],
-                    'R' => nodes[node.Right],
+                    'L' => nodes[current.Left],
+                    'R' => nodes[current.Right],
                     _ => throw new Exception("Invalid direction")
                 };
-                if (!next[i].Name.EndsWith('Z'))
-                {
-                    allEndsWithZ = false;
-                }
-
-                i++;
             }
-
-            current = next;
-            if (steps % 1_000_000 == 0)
-            {
-                logger.WriteLine($"{steps}: {string.Join(", ", current.Select(n => n.Name).ToArray())}");
-            }
+            
+            stepsUntilZ.Add(steps);
         }
 
-        return steps;
+        var total = stepsUntilZ.Aggregate(1.0, (a, b) => AocMath.lcm(a, b));
+        return total;
     }
 
     [GeneratedRegex(@"(\w\w\w) = \((\w\w\w), (\w\w\w)\)")]
