@@ -9,10 +9,21 @@ public static class StringExtensions
     private static readonly Regex _intRegex = new(@"([+-]?\d+)", RegexOptions.Compiled);
 
     private static readonly string[] LineEndings = { "\r\n", "\r", "\n" };
+    private static readonly string[] DoubleLineEndings = { "\r\n\r\n", "\r\r", "\n\n" };
 
     public static IEnumerable<string> Lines(this string s, StringSplitOptions options = StringSplitOptions.RemoveEmptyEntries)
     {
+        return SplitBySingleNewline(s, options);
+    }
+
+    public static IEnumerable<string> SplitBySingleNewline(this string s, StringSplitOptions options = StringSplitOptions.RemoveEmptyEntries)
+    {
         return s.Split(LineEndings, options);
+    }
+
+    public static IEnumerable<string> SplitByDoubleNewline(this string s, StringSplitOptions options = StringSplitOptions.RemoveEmptyEntries)
+    {
+        return s.Split(DoubleLineEndings, options);
     }
 
     public static IEnumerable<int> Integers(this string s)
