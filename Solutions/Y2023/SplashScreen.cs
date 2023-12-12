@@ -9,11 +9,13 @@ class SplashScreenImpl : SplashScreen
         Write(0x888888, "                                                            \n                                       ");
         Write(0x888888, "                     \n                      ...                                   \n               .'");
         Write(0x888888, "'....' '..        *                          13\n               '.ZZ                                 ");
-        Write(0x888888, "        \n           .'''' ZZ* .'''.     '                              12 ");
+        Write(0x888888, "        \n           .'''' ZZ");
+        Write(0xffff66, "* ");
+        Write(0x888888, ".'''.     '                              12 ");
         Write(0xffff66, "**\n           ");
         Write(0x888888, "'....     '...'     ....'                        \n               .'");
-        Write(0xffff66, "*");
-        Write(0x888888, "            '.                              11 ");
+        Write(0xffff66, "*            ");
+        Write(0x888888, "'.                              11 ");
         Write(0xffff66, "**\n               ");
         Write(0x888888, "'..''''.");
         Write(0xffff66, "*");

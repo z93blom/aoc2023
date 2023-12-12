@@ -136,123 +136,86 @@ class Solution : ISolver
         return true;
     }
 
+    private static readonly SpringState[] SingleUnknownState = { SpringState.Unknown};
+    
     static object PartTwo(string input, Func<TextWriter> getOutputFunction)
     {
+        SpringState ToSpringState(char c)
+        {
+            return c switch
+            {
+                '.' => SpringState.Operational,
+                '#' => SpringState.Damaged,
+                '?' => SpringState.Unknown,
+                _ => throw new Exception("Unknown spring state.")
+            };
+        }
+        
         var rows = input.SplitBySingleNewline()
             .Select(s => s.Split(" ").ToArray())
-            .Select(a => new Row(a[0].ToCharArray(), a[1].Integers().ToArray()))
-            .Select(r => new Row(
-                string.Join('?', Enumerable.Range(0, 5).Select(_ => new string(r.Record))).ToCharArray(), 
-                Enumerable.Range(0, 5).Aggregate(Array.Empty<int>(), (c, _) => c.Concat(r.Conditions).ToArray())))
+            .Select(a => new SpringRow(a[0].Select(ToSpringState).ToArray(), a[1].Integers().ToArray()))
+            .Select(r => new SpringRow(
+                Enumerable.Range(0, 5).Aggregate(Enumerable.Empty<SpringState>(), (a, _) => a.Concat(SingleUnknownState).Concat(r.Springs)).Skip(1).ToArray(), 
+                Enumerable.Range(0, 5).Aggregate(Array.Empty<int>(), (c, _) => c.Concat(r.DamagedSequence).ToArray())))
             .ToArray();
 
         var arrangements = new List<long>();
         foreach (var row in rows)
         {
-            var validArrangements = GetValidPermutations(row, row.Record, row.Conditions, 0).ToArray();
-            arrangements.Add(validArrangements.Length);
+            var cache = new Dictionary<(int, int), long>();
+            var numberOfArrangements = row.GetValidArrangements(0, 0, cache);
+            arrangements.Add(numberOfArrangements);
         }
         
         return arrangements.Sum();
     }
 
-    private static IEnumerable<char[]> GetValidPermutations(Row row, char[] input, int[] conditions, int index)
+    private enum SpringState
     {
-        if (row.Record.Length != input.Length)
+        Operational,
+        Damaged,
+        Unknown,
+    }
+
+    private readonly record struct SpringRow(SpringState[] Springs, int[] DamagedSequence)
+    {
+        public long GetValidArrangements(int springIndex, int damageSequenceIndex, Dictionary<(int, int), long> cache)
         {
-            yield break;
-        }
+            if (cache.ContainsKey((springIndex, damageSequenceIndex)))
+            {
+                return cache[(springIndex, damageSequenceIndex)];
+            }
         
-        if (index == input.Length)
-        {
-            if (IsValid(input, conditions))
+            // The next sequence can either start here, or not start here.
+            var arrangementCount = 0L;
+            if (Springs[springIndex] != SpringState.Damaged && springIndex + 1 < Springs.Length)
             {
-                yield return input;
+                // Try at a later point (allow the Unknowns to start later)
+                arrangementCount += GetValidArrangements(springIndex + 1, damageSequenceIndex, cache);
             }
 
-            yield break;
-        }
-
-        if (input[index] != '?')
-        {
-            foreach (var p in GetValidPermutations(row, input, conditions, index + 1))
+            var endIndex = springIndex + DamagedSequence[damageSequenceIndex];
+            if (endIndex <= Springs.Length &&
+                Springs[springIndex..endIndex].All(s => s != SpringState.Operational) &&
+                (endIndex == Springs.Length || Springs[endIndex] != SpringState.Damaged))
             {
-                yield return p;
-            }
-        }
-        else
-        {
-            var start = input[..index];
-            if (!StillValid(start, conditions))
-            {
-                yield break;
-            }
-
-            var withPeriod = start.Concat(Period).Concat(input[(index + 1)..]).ToArray();
-            foreach (var p in GetValidPermutations(row, withPeriod, conditions, index + 1))
-            {
-                yield return p;
+                // This point can start a damaged sequence.
+                if (damageSequenceIndex + 1 == DamagedSequence.Length)
+                {
+                    // We are at the last damaged sequence. Are there any damaged springs left in the list?
+                    arrangementCount += Springs.Skip(endIndex + 1).Any(s => s == SpringState.Damaged) ? 0 : 1;
+                }
+                else if (endIndex + 1 < Springs.Length)
+                {
+                    // Go on to the next damaged sequence.
+                    arrangementCount += GetValidArrangements(endIndex + 1, damageSequenceIndex + 1, cache);
+                }
             }
 
-            var withHash = start.Concat(Hash).Concat(input[(index + 1)..]).ToArray();
-            foreach (var p in GetValidPermutations(row, withHash, conditions, index + 1))
-            {
-                yield return p;
-            }
+            cache[(springIndex, damageSequenceIndex)] = arrangementCount;
+            return arrangementCount;
         }
     }
+
     
-    private static bool StillValid(char[] input, int[] conditions)
-    {
-        var groupIndex = 0;
-        var i = 0;
-        var isInGroup = false;
-        var groupLength = 0;
-        while (i < input.Length)
-        {
-            if (input[i] == '#' && isInGroup)
-            {
-                groupLength++;
-                if (groupLength > conditions[groupIndex])
-                {
-                    // Invalid length of this group.
-                    return false;
-                }
-            }
-            else if (input[i] == '#')
-            {
-                isInGroup = true;
-                groupLength = 1;
-                if (groupIndex == conditions.Length)
-                {
-                    // Too many groups.
-                    return false;
-                }
-            }
-            else if (isInGroup)
-            {
-                isInGroup = false;
-                if (groupLength != conditions[groupIndex])
-                {
-                    // Invalid length of this group.
-                    return false;
-                }
-
-                groupIndex++;
-            }
-
-            i++;
-        }
-
-        if (isInGroup)
-        {
-            if (groupLength > conditions[groupIndex])
-            {
-                // Invalid length of this group.
-                return false;
-            }
-        }
-
-        return true;
-    }
 }
