@@ -109,6 +109,96 @@ class Solution : ISolver
 
     static object PartTwo(string input, Func<TextWriter> getOutputFunction)
     {
+        var gridInputs = input.SplitByDoubleNewline().ToArray();
+        var grids = new List<Grid<Feature>>();
+        foreach (var gridInput in gridInputs)
+        {
+            var lines = gridInput.SplitBySingleNewline().ToArray();
+            var grid = new Grid<Feature>(lines[0].Length, lines.Length, YAxisDirection.ZeroAtTop);
+            for (var y = 0; y < grid.Height; y++)
+            {
+                for (var x = 0; x < grid.Width; x++)
+                {
+                    grid[x, y] = lines[y][x] switch
+                    {
+                        '.' => Feature.Ash,
+                        '#' => Feature.Mountain,
+                        _ => throw new Exception("Unknown map feature.")
+                    };
+                }
+            }
+
+            grids.Add(grid);
+        }
+
+        var verticals = new List<int>();
+        var horizontals = new List<int>();
+        foreach (var grid in grids)
+        {
+            var found = false;
+            // Try the vertical slices
+            for (var x = 0; x < grid.Width - 1; x++)
+            {
+                var slice = grid.YSlice(x);
+                if (IsAlmostPerfectReflection(grid, slice, p => p.Left, p => p.Right))
+                {
+                    verticals.Add(x + 1);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found)
+            {
+                continue;
+            }
+            
+            
+            // Try the horizontal slices.
+            for (var y = 0; y < grid.Height - 1; y++)
+            {
+                var slice = grid.XSlice(y);
+                if (IsAlmostPerfectReflection(grid, slice, p => p.Above, p => p.Below))
+                {
+                    horizontals.Add(y + 1);
+                    break;
+                }
+            }
+        }
+        
+        return verticals.Sum() + horizontals.Sum() * 100;
         return 0;
+    }
+    
+    private static bool IsAlmostPerfectReflection(
+        Grid<Feature> grid,
+        IEnumerable<Point2> startingPoints, 
+        Func<Point2, Point2> pointTranslation,
+        Func<Point2, Point2> compareTranslation)
+    {
+        var current = startingPoints.ToDictionary(p => p, p=> p);
+        var compare = current.ToDictionary(p => p.Key, p => compareTranslation(p.Value));
+        var changed = false;
+        while (grid.Contains(current.Values.First()) && grid.Contains(compare.Values.First()))
+        {
+            var count = current.Count(p => grid[p.Value] != grid[compare[p.Key]]);
+            if (count != 0)
+            {
+                if (!changed && count == 1)
+                {
+                    changed = true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            current = current.ToDictionary(kvp => kvp.Key, kvp => pointTranslation(kvp.Value));
+            compare = compare.ToDictionary(kvp => kvp.Key, kvp => compareTranslation(kvp.Value));
+        }
+
+        // The reflection has to have a changed point.
+        return changed;
     }
 }
