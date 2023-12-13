@@ -18,27 +18,15 @@ class Solution : ISolver
 
     static object PartOne(string input, Func<TextWriter> getOutputFunction)
     {
-        var gridInputs = input.SplitByDoubleNewline().ToArray();
-        var grids = new List<Grid<Feature>>();
-        foreach (var gridInput in gridInputs)
-        {
-            var lines = gridInput.SplitBySingleNewline().ToArray();
-            var grid = new Grid<Feature>(lines[0].Length, lines.Length, YAxisDirection.ZeroAtTop);
-            for (var y = 0; y < grid.Height; y++)
+        var grids = input
+            .SplitByDoubleNewline()
+            .Select(gridInput => gridInput.ToGrid(c => c switch
             {
-                for (var x = 0; x < grid.Width; x++)
-                {
-                    grid[x, y] = lines[y][x] switch
-                    {
-                        '.' => Feature.Ash,
-                        '#' => Feature.Mountain,
-                        _ => throw new Exception("Unknown map feature.")
-                    };
-                }
-            }
-
-            grids.Add(grid);
-        }
+                '.' => Feature.Ash,
+                '#' => Feature.Mountain,
+                _ => throw new Exception("Unknown map feature.")
+            }))
+            .ToArray();
 
         var verticals = new List<int>();
         var horizontals = new List<int>();
@@ -109,27 +97,15 @@ class Solution : ISolver
 
     static object PartTwo(string input, Func<TextWriter> getOutputFunction)
     {
-        var gridInputs = input.SplitByDoubleNewline().ToArray();
-        var grids = new List<Grid<Feature>>();
-        foreach (var gridInput in gridInputs)
-        {
-            var lines = gridInput.SplitBySingleNewline().ToArray();
-            var grid = new Grid<Feature>(lines[0].Length, lines.Length, YAxisDirection.ZeroAtTop);
-            for (var y = 0; y < grid.Height; y++)
+        var grids = input
+            .SplitByDoubleNewline()
+            .Select(gridInput => gridInput.ToGrid(c => c switch
             {
-                for (var x = 0; x < grid.Width; x++)
-                {
-                    grid[x, y] = lines[y][x] switch
-                    {
-                        '.' => Feature.Ash,
-                        '#' => Feature.Mountain,
-                        _ => throw new Exception("Unknown map feature.")
-                    };
-                }
-            }
-
-            grids.Add(grid);
-        }
+                '.' => Feature.Ash,
+                '#' => Feature.Mountain,
+                _ => throw new Exception("Unknown map feature.")
+            }))
+            .ToArray();
 
         var verticals = new List<int>();
         var horizontals = new List<int>();

@@ -238,4 +238,26 @@ public static class StringExtensions
         );
     }
 
+    /// <summary>
+    /// Creates a grid from the (input) string.
+    /// </summary>
+    /// <param name="s">The (input) string.</param>
+    /// <param name="f">The function to translate from a char to the grid type.</param>
+    /// <typeparam name="T">The type that each point in the grid will have.</typeparam>
+    /// <returns>The parsed grid.</returns>
+    public static Grid<T> ToGrid<T>(this string s, Func<char, T> f)
+    {
+        var lines = s.SplitBySingleNewline().ToArray();
+        var grid = new Grid<T>(lines[0].Length, lines.Length, YAxisDirection.ZeroAtTop);
+        for (var y = 0; y < grid.Height; y++)
+        {
+            for (var x = 0; x < grid.Width; x++)
+            {
+                grid[x, y] = f(lines[y][x]);
+            }
+        }
+
+        return grid;
+    }
+
 }
