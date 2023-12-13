@@ -6,12 +6,13 @@ class SplashScreenImpl : SplashScreen
     public override void Show()
     {
         WriteFiglet("Advent of code 2023", Spectre.Console.Color.Yellow);
-        Write(0x888888, "                                                            \n                                       ");
-        Write(0x888888, "                     \n                      ...                                   \n               .'");
-        Write(0x888888, "'....' '..        *                          13\n               '.ZZ                                 ");
-        Write(0x888888, "        \n           .'''' ZZ");
+        Write(0x888888, "                             .      *                         14\n                           .       ");
+        Write(0x888888, "                         \n                      ...     . . . '                       \n             ");
+        Write(0x888888, "  .''....' '..'.  './\\*/\\ ~                      13 ");
+        Write(0xffff66, "**\n               ");
+        Write(0x888888, "'.ZZ          '..   /\\                       \n           .'''' ZZ");
         Write(0xffff66, "* ");
-        Write(0x888888, ".'''.     '                              12 ");
+        Write(0x888888, ".'''.     ''''.... .. .  '               12 ");
         Write(0xffff66, "**\n           ");
         Write(0x888888, "'....     '...'     ....'                        \n               .'");
         Write(0xffff66, "*            ");
