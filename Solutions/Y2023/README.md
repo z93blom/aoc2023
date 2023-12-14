@@ -1,8 +1,8 @@
 # Advent of Code (2023)
 Check out http://adventofcode.com/2023.
 ```
-                  .      *                         14
-                .                                
+                  .      *                         14 **
+                .                *                 15
            ...     . . . '                       
     .''....' '..'.  './\*/\ ~                      13 **
     '.ZZ          '..   /\                       

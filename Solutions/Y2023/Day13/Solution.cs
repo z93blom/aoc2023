@@ -20,7 +20,7 @@ class Solution : ISolver
     {
         var grids = input
             .SplitByDoubleNewline()
-            .Select(gridInput => gridInput.ToGrid(c => c switch
+            .Select(gridInput => gridInput.ToGrid(YAxisDirection.ZeroAtTop, c => c switch
             {
                 '.' => Feature.Ash,
                 '#' => Feature.Mountain,
@@ -99,7 +99,7 @@ class Solution : ISolver
     {
         var grids = input
             .SplitByDoubleNewline()
-            .Select(gridInput => gridInput.ToGrid(c => c switch
+            .Select(gridInput => gridInput.ToGrid(YAxisDirection.ZeroAtTop, c => c switch
             {
                 '.' => Feature.Ash,
                 '#' => Feature.Mountain,
@@ -143,7 +143,6 @@ class Solution : ISolver
         }
         
         return verticals.Sum() + horizontals.Sum() * 100;
-        return 0;
     }
     
     private static bool IsAlmostPerfectReflection(

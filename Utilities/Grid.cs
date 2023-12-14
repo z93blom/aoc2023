@@ -115,8 +115,13 @@ public class Grid<T>
     {
         return ToString(" ");
     }
-
+    
     public string ToString(string delimiter)
+    {
+        return ToString(delimiter, t => t.ToString());
+    }
+
+    public string ToString(string delimiter, Func<T, string> toString)
     {
         var sb = new StringBuilder();
 
@@ -124,7 +129,7 @@ public class Grid<T>
         {
             for (var x = Offset.X; x < Offset.X + Width; x++)
             {
-                sb.Append(this[x, y]);
+                sb.Append(toString(this[x, y]));
                 if (x < Width - 1)
                 {
                     sb.Append(delimiter);
