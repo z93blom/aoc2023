@@ -91,7 +91,7 @@ class Solution : ISolver
         // PrintGrid(output, grid);
         
         // Count the load
-        var load = GetLoad(grid);
+        var load = GetLoad(grid, grid.Points.Where(p => grid[p] == Space.RoundRock));
         return load;
     }
 
@@ -106,137 +106,40 @@ class Solution : ISolver
         }));
     }
 
-    private static long GetLoad(Grid<Space> grid)
+    private static long GetLoad(Grid<Space> grid, IEnumerable<Point2> rockPoints)
     {
-        var load = 0L;
-        foreach (var p in grid.Points)
-        {
-            if (grid[p] == Space.RoundRock)
-            {
-                load += grid.Height - p.Y;
-            }
-        }
-
-        return load;
+        return rockPoints.Sum(p => grid.Height - p.Y);
     }
 
-    private static void RollNorth(Grid<Space> grid)
+    private static IEnumerable<Point2> Roll(
+        IReadOnlyDictionary<(long, long, Direction), Point2> stops, 
+        IEnumerable<Point2> rollingRocks, 
+        Direction direction, 
+        Func<Point2, Point2> fallbackPosition)
     {
-        for (var x = 0; x < grid.Width; x++)
+        var newPositions = new HashSet<Point2>();
+        foreach (var rock in rollingRocks)
         {
-            var slice = grid.YSlice(x).OrderBy(p => p.Y);
-            var firstEmpty = new Point2(x, 0, grid.YAxisDirection);
-            foreach (var p in slice)
+            var p = stops[(rock.X, rock.Y, direction)];
+            while (newPositions.Contains(p))
             {
-                switch(grid[p])
-                {
-                    case Space.RoundRock:
-                        if (p != firstEmpty)
-                        {
-                            grid[firstEmpty] = Space.RoundRock;
-                            grid[p] = Space.Empty;
-                        }
-                        firstEmpty = firstEmpty.Below;
-                        break;
-                    case Space.CubeRock:
-                        firstEmpty = p.Below;
-                        break;
-                    case Space.Empty:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+                p = fallbackPosition(p);
             }
+            newPositions.Add(p);
         }
+
+        return newPositions;
     }
-    private static void RollSouth(Grid<Space> grid)
+
+    private enum Direction
     {
-        for (var x = 0; x < grid.Width; x++)
-        {
-            var slice = grid.YSlice(x).OrderByDescending(p => p.Y);
-            var firstEmpty = new Point2(x, grid.Height - 1, grid.YAxisDirection);
-            foreach (var p in slice)
-            {
-                switch(grid[p])
-                {
-                    case Space.RoundRock:
-                        if (p != firstEmpty)
-                        {
-                            grid[firstEmpty] = Space.RoundRock;
-                            grid[p] = Space.Empty;
-                        }
-                        firstEmpty = firstEmpty.Above;
-                        break;
-                    case Space.CubeRock:
-                        firstEmpty = p.Above;
-                        break;
-                    case Space.Empty:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
+        North,
+        West,
+        South,
+        East
     }
-    
-    private static void RollEast(Grid<Space> grid)
-    {
-        for (var y = 0; y < grid.Height; y++)
-        {
-            var slice = grid.XSlice(y).OrderByDescending(p => p.X);
-            var firstEmpty = new Point2(grid.Width - 1, y, grid.YAxisDirection);
-            foreach (var p in slice)
-            {
-                switch(grid[p])
-                {
-                    case Space.RoundRock:
-                        if (p != firstEmpty)
-                        {
-                            grid[firstEmpty] = Space.RoundRock;
-                            grid[p] = Space.Empty;
-                        }
-                        firstEmpty = firstEmpty.Left;
-                        break;
-                    case Space.CubeRock:
-                        firstEmpty = p.Left;
-                        break;
-                    case Space.Empty:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
-    }
-    private static void RollWest(Grid<Space> grid)
-    {
-        for (var y = 0; y < grid.Height; y++)
-        {
-            var slice = grid.XSlice(y).OrderBy(p => p.X);
-            var firstEmpty = new Point2(0, y, grid.YAxisDirection);
-            foreach (var p in slice)
-            {
-                switch(grid[p])
-                {
-                    case Space.RoundRock:
-                        if (p != firstEmpty)
-                        {
-                            grid[firstEmpty] = Space.RoundRock;
-                            grid[p] = Space.Empty;
-                        }
-                        firstEmpty = firstEmpty.Right;
-                        break;
-                    case Space.CubeRock:
-                        firstEmpty = p.Right;
-                        break;
-                    case Space.Empty:
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-        }
-    }
+
+    private readonly record struct PD(Point2 Point, Direction Direction);
 
     static object PartTwo(string input, Func<TextWriter> getOutputFunction)
     {
@@ -247,26 +150,42 @@ class Solution : ISolver
             '.' => Space.Empty,
             _ => throw new Exception("Unknown space")
         });
+        
+        // Calculate the stop point for each non-cube rock, and each direction
+        var stops = new Dictionary<(long, long, Direction), Point2>();
+        foreach (var p in grid.Points.Where(p => grid[p] != Space.CubeRock))
+        {
+            stops[(p.X, p.Y, Direction.North)] = GetStop(grid, p, s => s.Above);
+            stops[(p.X, p.Y, Direction.West)] = GetStop(grid, p, s => s.Left);
+            stops[(p.X, p.Y, Direction.South)] = GetStop(grid, p, s => s.Below);
+            stops[(p.X, p.Y, Direction.East)] = GetStop(grid, p, s => s.Right);
+        }
 
-        var output = getOutputFunction();
+        var rollingRocks = grid.Points.Where(p => grid[p] == Space.RoundRock);
         var cycle = 1;
         while (cycle <= 1_000_000_000)
         {
-            RollNorth(grid);
-            RollWest(grid);
-            RollSouth(grid);
-            RollEast(grid);
-            
+            rollingRocks = Roll(stops, rollingRocks, Direction.North, p => p.Below);
+            rollingRocks = Roll(stops, rollingRocks, Direction.West, p => p.Right);
+            rollingRocks = Roll(stops, rollingRocks, Direction.South, p => p.Above);
+            rollingRocks = Roll(stops, rollingRocks, Direction.East, p => p.Left);
             cycle++;
-
-            if (cycle % 10_000 == 0)
-            {
-                output.WriteLine(cycle);
-            }
         }
-        PrintGrid(output, grid);
-        
-        var load = GetLoad(grid);
+
+        var load = GetLoad(grid, rollingRocks);
         return load;
+    }
+
+    private static Point2 GetStop(Grid<Space> grid, Point2 p, Func<Point2, Point2> step)
+    {
+        var current = p;
+        var next = step(current);
+        while (grid.Contains(next) && grid[next] != Space.CubeRock)
+        {
+            current = next;
+            next = step(current);
+        }
+
+        return current;
     }
 }
