@@ -118,7 +118,7 @@ public class Grid<T>
     
     public string ToString(string delimiter)
     {
-        return ToString(delimiter, t => t.ToString());
+        return ToString(delimiter, t => t?.ToString() ?? string.Empty);
     }
 
     public string ToString(string delimiter, Func<T, string> toString)
