@@ -16,7 +16,7 @@ public abstract class SplashScreen
 
     protected static void Write(int rgb, string text)
     {
-        AnsiConsole.Markup($"[#{rgb:x6}]{text}[/]");
+        AnsiConsole.Markup($"[#{rgb:x6}]{text.EscapeMarkup()}[/]");
     }
 
     protected void WriteFiglet(string text)
