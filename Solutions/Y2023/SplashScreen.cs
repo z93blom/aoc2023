@@ -13,7 +13,7 @@ class SplashScreenImpl : SplashScreen
         Write(0x888888, "'");
         Write(0xff0000, ".            ");
         Write(0x888888, "14 ");
-        Write(0xffff66, "**\n                           ");
+        Write(0xffff66, "* \n                           ");
         Write(0xff0000, ".");
         Write(0x888888, "' /\\/\\ ~~~~~~~~ ");
         Write(0xffff66, "* ");

@@ -32,13 +32,31 @@ public class SplashScreenGenerator {
             foreach (var token in line)
             {
                 var consoleColor = 0x888888;
-                if (!string.IsNullOrWhiteSpace(token.Text))
+                var text = token.Text;
+                
+                if (token.Styles.Contains("calendar-mark-complete"))
+                {
+                    if (!(token.Styles.Contains("calendar-complete") ||
+                          token.Styles.Contains("calendar-verycomplete")))
+                    {
+                        text = new string(' ', token.Text.Length);
+                    }
+                }
+                if (token.Styles.Contains("calendar-mark-verycomplete"))
+                {
+                    if (!token.Styles.Contains("calendar-verycomplete"))
+                    {
+                        text = new string(' ', token.Text.Length);
+                    }
+                }
+                
+                if (!string.IsNullOrWhiteSpace(text))
                 {
                     var style = token.Styles.FirstOrDefault(s => themeColors.ContainsKey(s));
                     consoleColor = style == default ? 0x888888 : themeColors[style];
                 }
 
-                bw.Write(consoleColor, token.Text);
+                bw.Write(consoleColor, text);
             }
 
             bw.Write(-1, "\n");
