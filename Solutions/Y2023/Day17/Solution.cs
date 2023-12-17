@@ -1,6 +1,7 @@
 using System.Drawing;
 using AdventOfCode.Framework;
 using AdventOfCode.Utilities;
+using SuperLinq;
 
 namespace AdventOfCode.Solutions.Y2023.Day17;
 
@@ -76,54 +77,128 @@ class Solution : ISolver
         var grid = input.ToGrid(YAxisDirection.ZeroAtTop, c => c - '0');
         var start = new Point2(0, 0, YAxisDirection.ZeroAtTop);
         var goal = new Point2(grid.Width - 1, grid.Height - 1, YAxisDirection.ZeroAtTop);
-        var stack = new Stack<Path>();
-        var rightPath = new Path(start.Right, grid[start.Right], new[] { Dir.East }, new[]{start, start.Right});
-        stack.Push(rightPath);
-        var downPath = new Path(start.Below, grid[start.Below], new[] { Dir.South }, new[]{start, start.Below});
-        stack.Push(downPath);
-        List<Path> validPaths = new();
 
-        Dictionary<(Point2, Dir, int), int> minimalCosts = new();
-        while (stack.Count > 0)
+        IEnumerable<((Point2 Point2, int length, Dir dir), int)> GetNeighbors(
+            (Point2 P, int Length, Dir Dir) state, int cost)
         {
-            var path = stack.Pop();
-
-            if (path.P == goal)
+            foreach (var dir in Enum.GetValues<Dir>())
             {
-                validPaths.Add(path);
-            }
-            
-            var key = (path.P, path.Steps[^1], path.Steps.Reverse().Count(d => d == path.Steps[^1]));
-            if (minimalCosts.TryGetValue(key, out var value) && value < path.Cost)
-            {
-                continue;
-            }
+                if (state.Length == 3 && state.Dir == dir)
+                {
+                    // Can't continue for more than three steps in the same direction.
+                    continue;
+                }
 
-            minimalCosts[key] = path.Cost;
+                if (state.Dir != dir)
+                {
+                    if (state.Dir switch
+                        {
+                            Dir.East => dir is Dir.West,
+                            Dir.West => dir is Dir.East,
+                            Dir.North => dir is Dir.South,
+                            Dir.South => dir is Dir.North,
+                            _ => throw new ArgumentOutOfRangeException()
+                        })
+                    {
+                        // Can't turn around.
+                        continue;
+                    }
+                }
 
-            foreach (var dir in Allowed(path))
-            {
-                var destination = Next(path.P, dir);
-                if (path.Visited.Contains(destination) || !grid.Contains(destination))
+                var destination = dir switch
+                {
+                    Dir.North => state.P.Above,
+                    Dir.East => state.P.Right,
+                    Dir.South => state.P.Below,
+                    Dir.West => state.P.Left,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
+                if (!grid.Contains(destination))
                 {
                     continue;
                 }
 
-                var newPath = new Path(
-                    destination,
-                    path.Cost + grid[destination],
-                    path.Steps.Concat(new[] { dir }).ToArray(),
-                    path.Visited.Concat(new[] { destination }).ToArray());
-                stack.Push(newPath);
+                yield return ((
+                        destination,
+                        dir == state.Dir ? state.Length + 1 : 1,
+                        dir),
+                    cost + grid[destination]);
             }
         }
 
-        var bestPath = validPaths.MinBy(p => p.Cost);
-        return bestPath.Cost;
+        var minimalCost = SuperEnumerable.GetShortestPathCost<(Point2 P, int Length, Dir Dir), int>(
+            (start, 0, Dir.East),
+            GetNeighbors,
+            st => st.P == goal);
+
+        return minimalCost;
     }
 
     static object PartTwo(string input, Func<TextWriter> getOutputFunction)
     {
-        return 0;
+        var grid = input.ToGrid(YAxisDirection.ZeroAtTop, c => c - '0');
+        var start = new Point2(0, 0, YAxisDirection.ZeroAtTop);
+        var goal = new Point2(grid.Width - 1, grid.Height - 1, YAxisDirection.ZeroAtTop);
+
+        IEnumerable<((Point2 Point2, int length, Dir dir), int)> GetNeighbors(
+            (Point2 P, int Length, Dir Dir) state, int cost)
+        {
+            foreach (var dir in Enum.GetValues<Dir>())
+            {
+                if (state.Length == 10 && state.Dir == dir)
+                {
+                    continue;
+                }
+
+                if (state.Length < 4 && state.Dir != dir)
+                {
+                    continue;
+                }
+
+                if (state.Dir != dir)
+                {
+                    if (state.Dir switch
+                        {
+                            Dir.East => dir is Dir.West,
+                            Dir.West => dir is Dir.East,
+                            Dir.North => dir is Dir.South,
+                            Dir.South => dir is Dir.North,
+                            _ => throw new ArgumentOutOfRangeException()
+                        })
+                    {
+                        // Can't turn around.
+                        continue;
+                    }
+                }
+
+                var destination = dir switch
+                {
+                    Dir.North => state.P.Above,
+                    Dir.East => state.P.Right,
+                    Dir.South => state.P.Below,
+                    Dir.West => state.P.Left,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+
+                if (!grid.Contains(destination))
+                {
+                    continue;
+                }
+                
+                yield return ((
+                        destination,
+                        dir == state.Dir ? state.Length + 1 : 1,
+                        dir),
+                    cost + grid[destination]);
+            }
+        }
+
+        var minimalCost = SuperEnumerable.GetShortestPathCost<(Point2 P, int Length, Dir Dir), int>(
+            (start, 0, Dir.East),
+            GetNeighbors,
+            st => st.P == goal && st.Length >= 4);
+
+        return minimalCost;    
     }
 }
