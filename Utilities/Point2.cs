@@ -8,10 +8,10 @@
 /// <param name="YAxis">The y axis orientation.</param>
 public readonly record struct Point2(long X, long Y, YAxisDirection YAxis)
 {
-    public Point2 Left => this with { X = X - 1  };
-    public Point2 Right => this with { X = X + 1 };
-    public Point2 Above => this with { Y = YAxis == YAxisDirection.ZeroAtBottom ? Y + 1 :Y - 1 };
-    public Point2 Below => this with { Y = YAxis == YAxisDirection.ZeroAtBottom ? Y - 1 : Y + 1 };
+    public Point2 Left => Move(CompassDirection.West, 1);
+    public Point2 Right => Move(CompassDirection.East, 1);
+    public Point2 Above => Move(CompassDirection.North, 1);
+    public Point2 Below => Move(CompassDirection.South, 1);
 
     public bool IsLeftOf(Point2 p) => X < p.X;
     public bool IsRightOf(Point2 p) => X > p.X;
@@ -53,6 +53,30 @@ public readonly record struct Point2(long X, long Y, YAxisDirection YAxis)
     public long ManhattanDistance(Point2 p)
     {
         return Math.Abs(X - p.X) + Math.Abs(Y - p.Y);
+    }
+
+    public Point2 InDirection(CompassDirection direction)
+    {
+        return direction switch
+        {
+            CompassDirection.North => Above,
+            CompassDirection.East => Right,
+            CompassDirection.South => Below,
+            CompassDirection.West => Left,
+            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+        };
+    }
+
+    public Point2 Move(CompassDirection direction, long steps)
+    {
+        return direction switch
+        {
+            CompassDirection.North => this with { Y = YAxis == YAxisDirection.ZeroAtBottom ? Y + steps : Y - steps },
+            CompassDirection.East => this with { X = X + steps },
+            CompassDirection.South => this with { Y = YAxis == YAxisDirection.ZeroAtBottom ? Y - steps : Y + steps },
+            CompassDirection.West => this with { X = X - steps },
+            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+        };
     }
 
     public override string ToString()
