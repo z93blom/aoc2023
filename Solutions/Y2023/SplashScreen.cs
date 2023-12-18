@@ -49,11 +49,13 @@ class SplashScreenImpl : SplashScreen
         Write(0xff0000, "'''.........'''               ");
         Write(0x888888, "12 ");
         Write(0xffff66, "**\n           ");
-        Write(0x888888, "'.... ~   '...'  *[]....'                          18 ");
-        Write(0xffff66, "* \n               ");
-        Write(0x888888, ".'");
+        Write(0x888888, "'.... ~   '...'  ");
         Write(0xffff66, "*");
-        Write(0x888888, "  ~   [^^^] '.                              11 ");
+        Write(0x888888, "[]....'                          18 ");
+        Write(0xffff66, "**\n               ");
+        Write(0x888888, ".'");
+        Write(0xffff66, "*  ");
+        Write(0x888888, "~   [^^^] '.                              11 ");
         Write(0xffff66, "**\n               ");
         Write(0x888888, "'..''''.");
         Write(0xffff66, "*");
